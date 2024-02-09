@@ -12,37 +12,79 @@ class GameSprite(sprite.Sprite):
     def reset (self): 
         window.blit(self.image,(self.rect.x , self.rect.y)) 
 
-class Player(GameSprite): 
-    def update(self): 
-        keys_pressed = key.get_pressed() 
-        if keys_pressed [K_s] and self.rect.x > 5 : 
-            self.rect.x -= self.speed   
+class Player(GameSprite):
+    def update_r(self):
+        keys = key.get_pressed()
+        if keys[K_UP] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < win_height - 80:
+            self.rect.y += self.speed
+    def update_l(self):
+        keys = key.get_pressed()
+        if keys[K_w] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_s] and self.rect.y < win_height - 80:
+            self.rect.y += self.speed
+#ігрова сцена:
+back = ("завантаження.png")  #колір фону (background)
+win_width = 600
+win_height = 500
+window = display.set_mode((win_width, win_height))
+window.fill(back)
+ 
+#прапорці, що відповідають за стан гри
+game = True
+finish = False
+clock = time.Clock()
+FPS = 30
+ 
+#створення м'яча та ракетки 
+texas1 = Player('тфпуеі.png', 30, 200, 4, 50, 150) 
+texas2 = Player('тфпуеі.png', 520, 200, 4, 50, 150)
+shliapa = GameSprite('шляпа.png', 200, 200, 4, 50, 50)
 
-            keys_pressed = key.get_pressed() 
-        if keys_pressed [K_w] and self.rect.x < win_width - 80 : 
-            self.rect.x += self.speed 
+font.init()
+font = font.Font(None, 35)
+lose1 = font.render('PLAYER 1 LOSE!', True, (180, 0, 0))
+lose2 = font.render('PLAYER 2 LOSE!', True, (180, 0, 0))
+ 
+speed_x = 1
+speed_y = 1
 
-    def update(self): 
-        keys_pressed = key.get_pressed() 
-        if keys_pressed [K_s] and self.rect.x > 5 : 
-            self.rect.x -= self.speed   
+while game:
+    for e in event.get():
+        if e.type == QUIT:
+            game = False 
+    if finish != True:
+        window.fill(back)
+        texas1.update_l()
+        texas2.update_r()
+        shliapa.rect.x+=speed_x
+        shliapa.rect.y+=speed_y
 
-            keys_pressed = key.get_pressed() 
-        if keys_pressed [K_w] and self.rect.x < win_width - 80 : 
-            self.rect.x += self.speed 
-#ігрова сцена 
-win_width = 700 
-win_height = 500 
-window = display.set_mode((win_width, win_height)) 
-display.set_caption("Shooter Game") 
-background = transform.scale(image.load("galaxy.jpg"), (win_width, win_height)) 
-#шрифти ы написи 
-font.init() 
-font2 = font.Font(None, 36) 
-font1 = font.Font(None,80)
-text_lose = font1.render("YOU LOSE" ,True ,(255, 0, 0))
-text_win = font1.render("YOU WIN" ,True ,(0, 255, 0))
-#зображення 
-shliapa = 'шляпа.png' 
-nagets = 'тфпуеі.png' 
-texac = 'техас.avif'
+        if sprite.collide_rect(texas1, shliapa) or sprite.collide_rect(texas2, shliapa):
+            speed_x*= -1
+            speed_y*= 1
+
+
+        if shliapa.rect.y > win_height-50 or shliapa.rect.y < 0:
+            speed_y *= -1
+
+        if shliapa.rect.x < 0:
+            finish = True
+            window.blit(lose1, (200, 200))
+            game_over = True
+
+        if shliapa.rect.x > win_width:
+            finish = True
+            window.blit(lose2, (2, 200))
+            game_over = True
+
+        texas1.reset()
+        texas2.reset()
+        shliapa.reset()
+
+    display.update()
+    clock.tick(FPS)
+
+
